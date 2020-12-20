@@ -1,21 +1,21 @@
-import { Emoji, EmojiImport, EmojiMap, MapEmoji } from "src/interfaces/emojis_interfaces";
+import { Emoji, EmojiImport, EmojiMap, MapEmoji } from "src/interfaces/ingest_interfaces";
 
-export function buildOriginalMap(emojis : EmojiImport) {
+export function buildOriginalMap(emojis : EmojiImport) :Readonly<EmojiMap> {
     // create a new map with words as their strings
     var map_words : EmojiMap = new Map();
  
     Object.keys(emojis).forEach(key =>
-        {map_words = addKeywords(map_words, emojis[key].keywords, convertOriginalEmojiToMapEmoji(emojis[key]))
+        {map_words = addOriginalKeywords(map_words, emojis[key].keywords, convertOriginalEmojiToMapEmoji(emojis[key]))
     })
 
     return map_words;
 }
 
-function addKeywords(map : EmojiMap, key_list : string[], emoji : MapEmoji) {
+function addOriginalKeywords(map : EmojiMap, key_list : string[], emoji : MapEmoji) {
 
     // for every item in the keylist
     for (let x in key_list) {
-        let key = key_list[x]
+        let key = key_list[x].toLowerCase();
 
         // get the contents of the map in that key
         let contents = map.get(key);

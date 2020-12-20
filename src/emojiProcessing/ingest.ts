@@ -1,22 +1,23 @@
 import { readFromData } from "../data/read_from_data";
-import { EmojiImport } from "../interfaces/emojis_interfaces";
+import { EmojiImport, EmojiMap } from "../interfaces/ingest_interfaces";
 import { buildOriginalMap } from "../map/original_map";
+import { removeDiacritics } from "./remove_diacritics";
 
 
-export function ingestEmojisAsObject() {
-    return separateOutUnderscoreKeywords( addKeysToKeywords( readEmojiJSON()));
+export function ingestEmojisAsObject() : Readonly<EmojiImport> {
+    return removeDiacriticsInImport( separateOutUnderscoreKeywords( addKeysToKeywords( readEmojiJSON())));
 }
 
-export function ingestEmojisAsMap() {
+export function ingestEmojisAsMap() : Readonly<EmojiMap> {
     return buildOriginalMap(ingestEmojisAsObject());
 }
 
-function readEmojiJSON() {
+function readEmojiJSON() : Readonly<any> {
     // synchronously ingests the entire file
     return readFromData('emoji')
 }
 
-function addKeysToKeywords(emoji_import : EmojiImport) {
+function addKeysToKeywords(emoji_import : EmojiImport) : Readonly<EmojiImport> {
     // adds the key of the emoji into the emoji object keywords
 
     var emojis : EmojiImport = emoji_import;
@@ -27,7 +28,7 @@ function addKeysToKeywords(emoji_import : EmojiImport) {
     return emojis;
 }
 
-function separateOutUnderscoreKeywords(emoji_import : EmojiImport) {
+function separateOutUnderscoreKeywords(emoji_import : EmojiImport) : Readonly<EmojiImport> {
     // separate out phrases to individual words
 
     var emojis : EmojiImport = emoji_import;
@@ -52,4 +53,24 @@ function separateOutWordsInPhrase(phrase : string) : string[] {
     const separated = ((phrase.split("_").map(x => x.split("-")).map(x => x.map(x => x.split(' ')))).flat(3));
 
     return separated;
+}
+
+function removeDiacriticsInImport(emoji_import : EmojiImport) : Readonly<EmojiImport> {
+    
+    var emojis : EmojiImport = emoji_import;
+
+    // only keywords are ingested - therefore only need to localise keywords
+    Object.keys(emoji_import).forEach(x => emoji_import[x].keywords.map(
+        keyword => {
+            let normalised = removeDiacritics(keyword)
+            if (normalised != keyword) {
+                emojis[x].keywords.push(normalised)
+                // remove the key from the list
+                emojis[x].keywords = emojis[x].keywords.filter(word => !(word == keyword));
+            }
+        }
+    ))
+
+    return emojis;
+
 }

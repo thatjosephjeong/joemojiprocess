@@ -1,32 +1,17 @@
-
+import { findRelatedWordsList } from "./emojiProcessing/datamuse";
 import { ingestEmojisAsMap } from "./emojiProcessing/ingest";
-import { EmojiMap } from "./interfaces/emojis_interfaces";
-import {sliceMapByUlimit} from "./emojiProcessing/datamuse"
+import { EmojiMap } from "./interfaces/ingest_interfaces";
 
-function main() {
+
+async function main() {
     // import the original JSON file in a map format
-    var emojis_map : EmojiMap = ingestEmojisAsMap();
+    const original_emojis_map : Readonly<EmojiMap> = ingestEmojisAsMap();
+    console.log(original_emojis_map);
+    const new_emoji_map = await findRelatedWordsList(original_emojis_map)
+    console.log(new_emoji_map)
 
-    console.log(sliceMapByUlimit(emojis_map).length);
-
-    // return emojis_map;
-
-    /*
-    // add the emoji to the map
-    addEmojiToMap(
-        // weight the related emoji of the keywords
-        weightRelatedEmojis(
-            //find related words to the keys of the map
-            findRelatedWords(
-                // find the related keywords 
-                findKeysToMap(emojisMap) 
-            )
-        )
-    )
-    */
+    // add_to_new_map( modify_emoji_objects( find_related_words( slice_keywords( original_emojis_map.keys())))
 
 }
 
-
-
-console.log(main())
+main()

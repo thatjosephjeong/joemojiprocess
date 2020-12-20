@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-export function readFromData(fileName : string){
+export function readFromData(fileName : string) : Readonly<any> {
     // returns JSON object stored in data folder
     const data : string = fs.readFileSync(path.join(__dirname, fileName + '.json'), {encoding:'utf8'});
     const object = JSON.parse(data);

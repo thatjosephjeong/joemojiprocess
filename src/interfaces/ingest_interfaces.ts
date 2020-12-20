@@ -24,15 +24,6 @@ export interface DataMuseEmoji {
 
 export type EmojiMap = Map<string, MapEmoji[]> 
 
-export interface Word {
-    word: string, 
-    score: number
-}
-
-export interface WordsObj {
-    [key: string]: Word[]
-}
-
 /*
     Map of keywords that stores emoji words?
 */
