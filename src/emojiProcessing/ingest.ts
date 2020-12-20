@@ -8,7 +8,7 @@ export function ingestEmojisAsObject() : Readonly<EmojiImport> {
     return removeDiacriticsInImport( separateOutUnderscoreKeywords( addKeysToKeywords( readEmojiJSON())));
 }
 
-export function ingestEmojisAsMap() : Readonly<EmojiMap> {
+export function ingestEmojisAsMap() : EmojiMap {
     return buildOriginalMap(ingestEmojisAsObject());
 }
 

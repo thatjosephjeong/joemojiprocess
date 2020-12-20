@@ -6,10 +6,9 @@ import { EmojiMap } from "../interfaces/ingest_interfaces";
 import { ReturnedRequest, Word } from "src/interfaces/datamuse_interfaces";
 
 export async function findRelatedWordsList(original_map : Readonly<EmojiMap>) {
-    const related_words = await findRelatedWords (
+    return await findRelatedWords (
         sliceKeywords(Array.from(original_map.keys()))
     )
-    return await modify_emoji_objects(related_words)
 }
 
 async function findRelatedWords(keywords_list : Readonly<string[][]>) : Promise<Readonly<ReturnedRequest[]>> {
@@ -93,8 +92,4 @@ async function sendRelatedWordRequest(word : string) : Promise<Word[]> {
     }
 
     return output
-}
-
-async function modify_emoji_objects(returned_requests : Readonly<ReturnedRequest[]>) : EmojiMap {
-    
 }

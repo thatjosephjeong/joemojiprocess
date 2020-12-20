@@ -1,6 +1,6 @@
 import { Emoji, EmojiImport, EmojiMap, MapEmoji } from "src/interfaces/ingest_interfaces";
 
-export function buildOriginalMap(emojis : EmojiImport) :Readonly<EmojiMap> {
+export function buildOriginalMap(emojis : EmojiImport) : EmojiMap {
     // create a new map with words as their strings
     var map_words : EmojiMap = new Map();
  
