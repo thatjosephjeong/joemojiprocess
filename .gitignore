@@ -1,0 +1,3 @@
+# remove anything to do with distribution lmao
+dist
+node_modules
