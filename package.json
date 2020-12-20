@@ -1,0 +1,23 @@
+{
+  "name": "joemojiprocess2",
+  "version": "2.0.0",
+  "description": "A Second Attempt at creating a process in TypeScript (This time with even stricter typing)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thatjosephjeong/joemojiprocess2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thatjosephjeong/joemojiprocess2/issues"
+  },
+  "homepage": "https://github.com/thatjosephjeong/joemojiprocess2#readme",
+  "dependencies": {
+    "@types/node": "^14.14.14",
+    "axios": "^0.21.0"
+  }
+}
