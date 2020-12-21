@@ -9,7 +9,7 @@ import * as readline from "readline"
 
 async function main() {
 
-    var original_emojis_map : EmojiMap= new Map();
+    var original_emojis_map : EmojiMap = new Map();
 
     const iterations = await askForQuestion('Where do you want to import the file? \n 0 - emoji.json, \n 1 - the previous export.json\n');
     if (iterations === 0) {
@@ -25,6 +25,8 @@ async function main() {
     const new_emoji_map = await addRelatedWordsToMap(new_emoji_list, original_emojis_map);
 
     exportMapToJSONObject(new_emoji_map);   
+
+    console.log('all done!');
 }
 
 async function askForQuestion(query : string) {
