@@ -11,11 +11,12 @@ import * as path from "path"
 export function exportMapToJSONObject(original_emoji_map : EmojiMap) {
 
     const new_emoji_map = createNewStemmedMap(original_emoji_map);
-    saveFile(Object.fromEntries(new_emoji_map));
+    saveFile(Object.fromEntries(new_emoji_map), Object.fromEntries(original_emoji_map));
 }
 
-function saveFile(export_object : ExportObject) {
-    fs.writeFileSync(findExportFileName(), JSON.stringify(export_object, null, 1));
+function saveFile(stemmed_export_object : ExportObject, original_export_object : ExportObject) {
+    fs.writeFileSync(findExportFileName().export_dir, JSON.stringify(stemmed_export_object, null, 1));
+    fs.writeFileSync(findExportFileName().raw_export_dir, JSON.stringify(original_export_object, null, 1));
 }
 
 function createNewStemmedMap(original_emoji_map : EmojiMap) {
@@ -50,7 +51,10 @@ function createNewStemmedMap(original_emoji_map : EmojiMap) {
 function findExportFileName() {
     const file_data : Readonly<Config> = readFromData('config');
     const base_directory = __dirname.replace('emojiProcessing', 'data');
-    return path.join(base_directory, file_data.export_file_name + '.json')
+    return {
+        export_dir: path.join(base_directory, file_data.export_file_name + '.json'),
+        raw_export_dir: path.join(base_directory, file_data.raw_export_file_name + '.json')
+    }
 }
 
 function addEmojiToNewMap(map : EmojiMap, key : string, emoji : MapEmoji) {

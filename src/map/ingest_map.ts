@@ -13,5 +13,5 @@ export function ingestPreviousExport() : EmojiMap {
 
 export function findExportFileName() {
     const file_data : Readonly<Config> = readFromData('config');
-    return file_data.export_file_name;
+    return file_data.raw_export_file_name;
 }
