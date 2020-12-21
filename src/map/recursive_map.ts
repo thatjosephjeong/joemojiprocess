@@ -2,10 +2,10 @@ import { ReturnedRequest, Word } from "src/interfaces/datamuse_interfaces";
 import { EmojiMap, MapEmoji } from "src/interfaces/ingest_interfaces";
 import { RelatedEmoji } from "src/interfaces/map_interfaces";
 
-export async function hello(returned_requests : readonly ReturnedRequest[], original_map : EmojiMap) {
+export async function addRelatedWordsToMap(returned_requests : readonly ReturnedRequest[], original_map : EmojiMap) {
     const related_emojis = returned_requests.map(returned_request => modify_emoji_objects(returned_request, original_map));
     
-    var new_map = new Map(original_map);
+    var new_map : EmojiMap = new Map(original_map);
     
     related_emojis.map(related_emoji => {
         related_emoji.related_words.map(related_word => {
@@ -16,19 +16,19 @@ export async function hello(returned_requests : readonly ReturnedRequest[], orig
     return new_map;
 }
 
-function addEmojiToKey(map : EmojiMap, related_emojis : MapEmoji[], related_word : Word){
+export function addEmojiToKey(map : EmojiMap, related_emojis : MapEmoji[], related_word : Word){
 
     console.log('adding ', related_word.word, ' to the new map');
 
     var new_map = map;
 
     const weighted_related_emojis = related_emojis.map(related_emoji => {
-    const return_emoji : MapEmoji = {
-        char: related_emoji.char,
-        fitzpatrick_scale: related_emoji.fitzpatrick_scale,
-        weight: related_word.score
-    }
-    return return_emoji;
+        const return_emoji : MapEmoji = {
+            char: related_emoji.char,
+            fitzpatrick_scale: related_emoji.fitzpatrick_scale,
+            weight: related_word.score
+        }
+        return return_emoji;
     })
 
     const check = map.get(related_word.word);
@@ -51,7 +51,7 @@ function addEmojiToKey(map : EmojiMap, related_emojis : MapEmoji[], related_word
     return new_map
 }
 
-function definedGet(i : string, map : EmojiMap) : MapEmoji[] {
+export function definedGet(i : string, map : EmojiMap) : MapEmoji[] {
     let words = map.get(i);
     if (words != undefined) {
         return words

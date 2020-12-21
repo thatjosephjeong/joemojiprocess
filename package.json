@@ -19,5 +19,9 @@
   "dependencies": {
     "@types/node": "^14.14.14",
     "axios": "^0.21.0"
+  },
+  "devDependencies": {
+    "@types/natural": "^2.1.1",
+    "natural": "^2.1.5"
   }
 }
