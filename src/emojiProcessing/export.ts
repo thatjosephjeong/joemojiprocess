@@ -8,7 +8,7 @@ import { ExportObject } from "src/interfaces/export_interfaces";
 import * as fs from "fs"
 import * as path from "path"
 
-export function exportMapToJSONObject(original_emoji_map : Readonly<EmojiMap>) {
+export function exportMapToJSONObject(original_emoji_map : EmojiMap) {
 
     const new_emoji_map = createNewStemmedMap(original_emoji_map);
     saveFile(Object.fromEntries(new_emoji_map));
@@ -18,12 +18,14 @@ function saveFile(export_object : ExportObject) {
     fs.writeFileSync(findExportFileName(), JSON.stringify(export_object, null, 1));
 }
 
-function createNewStemmedMap(original_emoji_map : Readonly<EmojiMap>) {
+function createNewStemmedMap(original_emoji_map : EmojiMap) {
     
     var export_emoji_map : EmojiMap = new Map();
 
     Array.from(original_emoji_map.keys()).forEach(key => {
         const stemmed_word = stemWord(key);
+
+        console.log('adding ', stemmed_word, ' as a stemmed word to output');
 
         let check = export_emoji_map.get(stemmed_word)
         let adding_values = definedGet(key, original_emoji_map)
@@ -47,8 +49,8 @@ function createNewStemmedMap(original_emoji_map : Readonly<EmojiMap>) {
 
 function findExportFileName() {
     const file_data : Readonly<Config> = readFromData('config');
-    const base_directory = __dirname.replace('emojiProcessing', '');
-    return path.join(base_directory, file_data.export_file_name)
+    const base_directory = __dirname.replace('emojiProcessing', 'data');
+    return path.join(base_directory, file_data.export_file_name + '.json')
 }
 
 function addEmojiToNewMap(map : EmojiMap, key : string, emoji : MapEmoji) {
