@@ -27,7 +27,4 @@ async function main() {
     return new_config_file
 }
 
-
-
-
 main()
