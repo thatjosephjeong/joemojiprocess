@@ -78,14 +78,14 @@ async function createNewTable() : Promise<void> {
     const query_string = `
         CREATE TABLE ${table_name} (
             keyword text PRIMARY KEY,
-            emoji_array char(1)[],
+            emoji_array text[],
             weighting_array integer[]
         )
     `
     await pool.query(query_string);
 }
 
-export async function insertEmojiIntoTable(keyword : string, emoji : string, weighting : number) : Promise<void> {
+export async function insertEmojiIntoTable(keyword : string, emoji : string, weighting : number) : Promise<null> {
     /*
     Here is what the query string is trying to do:
     IF the keyword is in the table,
@@ -100,9 +100,9 @@ export async function insertEmojiIntoTable(keyword : string, emoji : string, wei
         DO $$                  
         BEGIN 
         IF EXISTS
-            ( SELECT 1
+            ( SELECT *
             FROM   ${table_name}
-            WHERE  keyword = '${keyword}'
+            WHERE  keyword = $1
             )
         THEN
             IF NOT EXISTS
@@ -117,6 +117,7 @@ export async function insertEmojiIntoTable(keyword : string, emoji : string, wei
                     weighting_array = weighting_array || '{${weighting}}'
                 WHERE keyword = '${keyword}';
             END IF;
+            RETURN;
         ELSE
             INSERT INTO ${table_name}
             VALUES (
@@ -130,5 +131,9 @@ export async function insertEmojiIntoTable(keyword : string, emoji : string, wei
     // technically, this implementation is not very safe
     // but since this doens't talk with the outside world or 
     // unpredictable apis, SQL Injection probs ain't gonna happen
+
+    // also PostgreSQL handles parameterized queries so shit its not even funny
+    console.log(query_string);
     await pool.query(query_string);
+    return null;
 }
