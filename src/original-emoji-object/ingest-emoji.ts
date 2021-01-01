@@ -1,5 +1,6 @@
+import { normaliseInput } from "../word-processing/normalise";
 import { readFromData } from "../data/read-data";
-import { createNewKeywordsTable, insertEmojiIntoTable } from "../pg/pg";
+import { createNewKeywordsTable, insertEmojiIntoRawTable } from "../pg/pg";
 import { EmojiImport } from "./ingest-interface";
 
 export async function buildOriginalSQLDatabase() {
@@ -11,31 +12,21 @@ export async function buildOriginalSQLDatabase() {
     insertOriginalKeywords(emoji_import);
 
 
-
-    // Object.keys(emoji_import).forEach((key) => {
-
-    // })
-
 }
 
 async function insertOriginalKeywords(emoji_import : EmojiImport) : Promise<void> {
-    
+    // insert the original keywords into the raw table
+
     const object_keys = Object.keys(emoji_import);
 
     for (let key in Object.keys(emoji_import)) {
-        for (let keyword in emoji_import[object_keys[key]].keywords) {
-            console.log(keyword);
-            await insertEmojiIntoTable(emoji_import[object_keys[key]].keywords[keyword], emoji_import[object_keys[key]].char, 2000);
+        // normalise the original input
+        const words = emoji_import[object_keys[key]].keywords.map((word) => normaliseInput(word)).flat(2);
+        for (let keyword in words) {
+            // insert every keyword into the table
+            await insertEmojiIntoRawTable(words[keyword], emoji_import[object_keys[key]].char, 2000);
         }
     }
-
-
-    // Object.keys(emoji_import).forEach((key) => {
-    //     emoji_import[key].keywords.forEach(async (keyword) => {
-    //         await insertEmojiIntoTable(keyword, emoji_import[key].char, 2000);
-    //     })
-    // })
-
 }
 
 async function readEmojiJSON() : Promise<Readonly<EmojiImport>> {

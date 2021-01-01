@@ -6,5 +6,6 @@ export interface PGConfig {
         password: string,
         port: number
     }
-    table_name: string
+    output_table_name: string,
+    raw_table_name: string
 }
