@@ -18,10 +18,16 @@
   "homepage": "https://github.com/thatjosephjeong/joemojiprocess2#readme",
   "dependencies": {
     "@types/node": "^14.14.14",
+    "@types/pg": "^7.14.7",
+    "all": "^0.0.0",
     "axios": "^0.21.0",
-    "pg": "^8.5.1"
+    "express": "^4.17.1",
+    "immutable": "^4.0.0-rc.12",
+    "pg": "^8.5.1",
+    "ramda": "^0.27.1"
   },
   "devDependencies": {
+    "@types/express": "^4.17.9",
     "@types/natural": "^2.1.1",
     "natural": "^2.1.5"
   }
