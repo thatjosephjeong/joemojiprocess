@@ -9,9 +9,7 @@ export async function buildOriginalSQLDatabase() {
     const emoji_import = (await Promise.all([readEmojiJSON(), createNewKeywordsTable()]))[0];
 
     // insert the original keywords into the SQL database
-    insertOriginalKeywords(emoji_import);
-
-
+    await insertOriginalKeywords(emoji_import);
 }
 
 async function insertOriginalKeywords(emoji_import : EmojiImport) : Promise<void> {
@@ -24,7 +22,8 @@ async function insertOriginalKeywords(emoji_import : EmojiImport) : Promise<void
         const words = emoji_import[object_keys[key]].keywords.map((word) => normaliseInput(word)).flat(2);
         for (let keyword in words) {
             // insert every keyword into the table
-            await insertEmojiIntoRawTable(words[keyword], emoji_import[object_keys[key]].char, 2000);
+            await insertEmojiIntoRawTable(words[keyword], emoji_import[object_keys[key]].char, 
+                2000, emoji_import[object_keys[key]].fitzpatrick_scale);
         }
     }
 }
@@ -33,5 +32,3 @@ async function readEmojiJSON() : Promise<Readonly<EmojiImport>> {
     // synchronously ingests the entire file
     return readFromData('emoji')
 }
-
-buildOriginalSQLDatabase()
