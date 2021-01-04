@@ -1,7 +1,7 @@
 // This file contains every interaction with the SQL database
 import { Pool, QueryResult } from "pg";
 import { readFromData } from "../data/read-data";
-import { PGConfig, Result } from "./pg-interface";
+import { PGConfig, Result, Row } from "./pg-interface";
 import * as pgformat from "pg-format";
 import { UlimitConfig } from "src/datamuse/datamuse-interface";
 
@@ -123,8 +123,24 @@ export async function* paginatedTempTable() : AsyncGenerator< QueryResult<Result
         LIMIT ${ulimit_config.ulimit_increment}
         OFFSET `
     while (true) {
-        console.log(query_string + offset.toString() + ';')
+        console.log(`Retrieving ${ulimit_config.ulimit_increment} results from ${temp_table_name}`);
         yield await pool.query(query_string + offset.toString() + ';');
         offset += ulimit_config.ulimit_increment;
     }
+}
+
+export async function findTempOriginalWords( keyword : string) : Promise<Row[]> {
+    // find the current emojis in temptable
+    const query_string = `
+        SELECT *
+        FROM ${temp_table_name}
+        WHERE keyword = %L;
+    `
+    const query_array = [keyword];
+
+    const word_store : QueryResult<any> =  await pool.query(pgformat.withArray(query_string, query_array));
+    const rows : Row[] = word_store.rows;
+
+    // technically this should only return one row, but let's be safe with it
+    return rows;
 }
