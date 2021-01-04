@@ -17,18 +17,10 @@ const ulimit_config : Readonly<UlimitConfig> = readFromData('config');
 export async function createNewKeywordsTable() : Promise<void> {
     // function below is only needed if IF EXISTS doesn't work
 
-    // delete the table if it exists
-    await deleteTableIfExists();
-    await createNewRawTable();
-}
-
-async function deleteTableIfExists() : Promise<void> {
     // inserted into the query string as pool.query doesn't support
     // variable table names
     await pool.query(`DROP TABLE IF EXISTS ${raw_table_name};`);
-}
-
-async function createNewRawTable() : Promise<void> {
+    
     // inserted into the query string as pool.query doesn't support
     // variable table names
     const query_string = `
@@ -40,6 +32,13 @@ async function createNewRawTable() : Promise<void> {
         )
     `
     await pool.query(query_string);
+    
+    return;
+}
+
+export async function deleteTempTable() {
+    await pool.query(`DROP TABLE IF EXISTS ${temp_table_name};`);
+    return;
 }
 
 export async function insertEmojiIntoRawTable(keyword : string, emoji : string, weighting : number, fitzpatrick_scale : boolean) : Promise<null> {
@@ -122,9 +121,13 @@ export async function* paginatedTempTable() : AsyncGenerator< QueryResult<Result
         ORDER BY keyword DESC
         LIMIT ${ulimit_config.ulimit_increment}
         OFFSET `
+
     while (true) {
         console.log(`Retrieving ${ulimit_config.ulimit_increment} results from ${temp_table_name}`);
-        yield await pool.query(query_string + offset.toString() + ';');
+        const reply = await pool.query(query_string + offset.toString() + ';');
+        console.log(`Retried ${reply.rowCount} results from query`);
+        yield reply;
+        
         offset += ulimit_config.ulimit_increment;
     }
 }

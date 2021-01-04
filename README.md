@@ -4,12 +4,15 @@ THIS IS AN UNSTABLE BUILD
 
 Make sure to create src/data/pg-config.json in this format:
 {
-    user: string,
-    host: string,
-    database: string,
-    password: string,
-    port: number
+    "server_details": {
+        "host": "localhost",
+        "database": "database",
+        "user": "usename",
+        "password": "password",
+        "port": 5432
+    },
+    "output_table_name": "emojis",
+    "raw_table_name": "rawEmojis",
+    "temp_table_name": "tempEmojis"
 }
-
-PLEASE ENSURE the POSTGRESQL database is configured in utf8mb4
 PLEASE ENSURE that your table and database name is postgresql is happy to be overwritten

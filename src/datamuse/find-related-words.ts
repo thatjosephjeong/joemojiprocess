@@ -1,7 +1,8 @@
 import { Result, Row } from "../pg/pg-interface";
-import { createTempTable, findTempOriginalWords, insertEmojiIntoRawTable, paginatedTempTable } from "../pg/pg";
+import { createTempTable, deleteTempTable, findTempOriginalWords, insertEmojiIntoRawTable, paginatedTempTable } from "../pg/pg";
 import { findRelatedWords } from "./datamuse";
 import { ReturnedRequest, Word } from "./datamuse-interface";
+import { normaliseInput } from "../word-processing/normalise";
 
 export async function addRelatedWords() {
     // wait for a temp table to be created
@@ -15,13 +16,16 @@ export async function addRelatedWords() {
     while (result.rowCount != 0) {
 
         var rows = result.rows;
-        await workOnWords(rows);
+        await findRelatedWordsAndAddThem(rows);
         // get the next iteration
         result = (await temp_table.next()).value
+
     }
+
+    await deleteTempTable();
 }
 
-async function workOnWords(rows : Row[]) {
+async function findRelatedWordsAndAddThem(rows : Row[]) : Promise<void> {
     const keyword_list = rows.map((obj) => {
         return obj.keyword
     })
@@ -29,12 +33,10 @@ async function workOnWords(rows : Row[]) {
     const related_words = await findRelatedWords(keyword_list);
     await insertRelatedWords(related_words);
 
-
 }
 
 async function insertRelatedWords( related_words : ReturnedRequest[] ) : Promise<null> {
     // a large amount of nested functions but tbh, this is the clearest way to lay it out
-
 
     for (let i in related_words) {
         // get the original word
@@ -59,19 +61,23 @@ async function insertRelatedWords( related_words : ReturnedRequest[] ) : Promise
 }
 
 async function insertRowArrayIntoRawTable(rows_updated_weighting : Row[] , related_word_obj : Word) : Promise<null> {
-
+    // insert cleaned words into the SQL Raw Table
     for (let n in rows_updated_weighting) {
+        // get a position in the array
         const updated_row = rows_updated_weighting[n];
         for (let m in updated_row.emoji_array) {
-            // finally, insert all the emoji into the raw table
-            await insertEmojiIntoRawTable(
-                related_word_obj.word, 
-                updated_row.emoji_array[m], 
-                updated_row.weighting_array[m], 
-                updated_row.fitzpatrick_scale_array[m]
-            )
+            // normalise words returned from datamuse
+            const clean_keywords = normaliseInput(related_word_obj.word);
+            for (let i in clean_keywords) {
+                // finally, insert all the emoji into the raw table
+                await insertEmojiIntoRawTable(
+                    clean_keywords[i], 
+                    updated_row.emoji_array[m], 
+                    updated_row.weighting_array[m], 
+                    updated_row.fitzpatrick_scale_array[m]
+                )
+            }
         }
-
     }
 
     return null;
@@ -82,7 +88,7 @@ function updateWeightingsInRow(related_rows : Row[] , related_word_obj : Word) :
     return related_rows.map((row) => {
         const new_row_weightings =  row.weighting_array.map((weighting) => {
             // average the weighting for each row
-            return average(weighting, related_word_obj.score)
+            return average(weighting, related_word_obj.score - 500)
         })
         const new_row : Row = 
         {

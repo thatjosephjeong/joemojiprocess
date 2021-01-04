@@ -7,6 +7,8 @@ async function main() {
 
     // find related words and add them to the SQL Database
     await addRelatedWords();
+
+    console.log("we done did it chief");
 }
 
 main();
