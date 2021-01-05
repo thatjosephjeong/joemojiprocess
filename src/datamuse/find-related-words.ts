@@ -4,7 +4,7 @@ import { findRelatedWords } from "./datamuse";
 import { ReturnedRequest, Word } from "./datamuse-interface";
 import { normaliseInput } from "../word-processing/normalise";
 
-export async function addRelatedWords() {
+export async function addRelatedWords(iterations : number) {
     // wait for a temp table to be created
     await createTempTable();
 
@@ -16,7 +16,7 @@ export async function addRelatedWords() {
     while (result.rowCount != 0) {
 
         var rows = result.rows;
-        await findRelatedWordsAndAddThem(rows);
+        await findRelatedWordsAndAddThem(rows, iterations);
         // get the next iteration
         result = (await temp_table.next()).value
 
@@ -25,17 +25,17 @@ export async function addRelatedWords() {
     await deleteTempTable();
 }
 
-async function findRelatedWordsAndAddThem(rows : Row[]) : Promise<void> {
+async function findRelatedWordsAndAddThem(rows : Row[], iterations : number) : Promise<void> {
     const keyword_list = rows.map((obj) => {
         return obj.keyword
     })
     // get returned requests of related words
     const related_words = await findRelatedWords(keyword_list);
-    await insertRelatedWords(related_words);
+    await insertRelatedWords(related_words, iterations);
 
 }
 
-async function insertRelatedWords( related_words : ReturnedRequest[] ) : Promise<null> {
+async function insertRelatedWords( related_words : ReturnedRequest[] , iterations : number) : Promise<null> {
     // a large amount of nested functions but tbh, this is the clearest way to lay it out
 
     for (let i in related_words) {
@@ -52,15 +52,14 @@ async function insertRelatedWords( related_words : ReturnedRequest[] ) : Promise
             const rows_updated_weighting = updateWeightingsInRow(related_rows, related_word_obj);
 
             // insert the new row into the raw table
-            await insertRowArrayIntoRawTable(rows_updated_weighting, related_word_obj);
-            
+            await insertRowArrayIntoRawTable(rows_updated_weighting, related_word_obj, iterations);
         }
     }
 
     return null;
 }
 
-async function insertRowArrayIntoRawTable(rows_updated_weighting : Row[] , related_word_obj : Word) : Promise<null> {
+async function insertRowArrayIntoRawTable(rows_updated_weighting : Row[] , related_word_obj : Word, iterations : number) : Promise<null> {
     // insert cleaned words into the SQL Raw Table
     for (let n in rows_updated_weighting) {
         // get a position in the array
@@ -74,7 +73,8 @@ async function insertRowArrayIntoRawTable(rows_updated_weighting : Row[] , relat
                     clean_keywords[i], 
                     updated_row.emoji_array[m], 
                     updated_row.weighting_array[m], 
-                    updated_row.fitzpatrick_scale_array[m]
+                    updated_row.fitzpatrick_scale_array[m],
+                    iterations
                 )
             }
         }

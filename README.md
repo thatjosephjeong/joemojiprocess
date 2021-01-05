@@ -1,6 +1,7 @@
 # joemojiprocess
 
-THIS IS AN UNSTABLE BUILD
+This is as far as possible away from functional programming.
+But, this is very memory efficient
 
 Make sure to create src/data/pg-config.json in this format:
 {

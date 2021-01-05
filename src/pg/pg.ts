@@ -3,7 +3,7 @@ import { Pool, QueryResult } from "pg";
 import { readFromData } from "../data/read-data";
 import { PGConfig, Result, Row } from "./pg-interface";
 import * as pgformat from "pg-format";
-import { UlimitConfig } from "src/datamuse/datamuse-interface";
+import { IncrementConfig } from "../datamuse/datamuse-interface";
 
 //create a new pool
 const pg_config : Readonly<PGConfig> = readFromData('pg-config');
@@ -11,20 +11,29 @@ const pg_config : Readonly<PGConfig> = readFromData('pg-config');
 const pool = new Pool(pg_config.server_details);
 const raw_table_name = pg_config.raw_table_name;
 const temp_table_name = pg_config.temp_table_name;
+const output_table_name = pg_config.output_table_name;
 
-const ulimit_config : Readonly<UlimitConfig> = readFromData('config');
+const ulimit_config : Readonly<IncrementConfig> = readFromData('config');
 
-export async function createNewKeywordsTable() : Promise<void> {
-    // function below is only needed if IF EXISTS doesn't work
+export async function createNewRawTable() : Promise<void> {
+    // create a new raw table
+    await createNewTable(raw_table_name);
+    return;
+}
 
+export async function createNewOutputTable() : Promise<void> {
+    await createNewTable(output_table_name);
+}
+
+async function createNewTable(table_name : string) : Promise<void> {
     // inserted into the query string as pool.query doesn't support
     // variable table names
-    await pool.query(`DROP TABLE IF EXISTS ${raw_table_name};`);
+    await pool.query(`DROP TABLE IF EXISTS ${table_name};`);
     
     // inserted into the query string as pool.query doesn't support
     // variable table names
     const query_string = `
-        CREATE TABLE ${raw_table_name} (
+        CREATE TABLE ${table_name} (
             keyword text PRIMARY KEY,
             emoji_array text[],
             weighting_array integer[],
@@ -41,11 +50,11 @@ export async function deleteTempTable() {
     return;
 }
 
-export async function insertEmojiIntoRawTable(keyword : string, emoji : string, weighting : number, fitzpatrick_scale : boolean) : Promise<null> {
-    return await insertEmojiIntoTable(raw_table_name, keyword, emoji, weighting, fitzpatrick_scale)
+export async function insertEmojiIntoRawTable(keyword : string, emoji : string, weighting : number, fitzpatrick_scale : boolean, iterations : number) : Promise<null> {
+    return await insertEmojiIntoTable(raw_table_name, keyword, emoji, weighting, fitzpatrick_scale, iterations)
 }
 
-async function insertEmojiIntoTable(table_name : string, keyword : string, emoji : string, weighting : number, fitzpatrick_scale : boolean) : Promise<null> {
+async function insertEmojiIntoTable(table_name : string, keyword : string, emoji : string, weighting : number, fitzpatrick_scale : boolean, iterations : number) : Promise<null> {
     /*
     Here is what the query string is trying to do:
     IF the keyword is in the table,
@@ -57,23 +66,28 @@ async function insertEmojiIntoTable(table_name : string, keyword : string, emoji
     ELSE
         INSERT the keyword with the emoji and weight
     */
+   var new_table_name = table_name;
+    if (table_name != raw_table_name) {
+        new_table_name = new_table_name + iterations.toString();
+    }
+   
     const query_string = `
         DO $$                  
         BEGIN 
         IF EXISTS
             ( SELECT *
-            FROM   ${table_name}
+            FROM   ${new_table_name}
             WHERE  keyword = %L
             )
         THEN
             IF NOT EXISTS
                 ( SELECT 1
-                FROM ${table_name}
+                FROM ${new_table_name}
                 WHERE keyword = %L
                 AND %L = ANY(emoji_array)
                 )
             THEN
-                UPDATE ${table_name}
+                UPDATE ${new_table_name}
                 SET emoji_array = emoji_array || ARRAY[%L],
                     weighting_array = weighting_array || ARRAY[${weighting}],
                     fitzpatrick_scale_array = fitzpatrick_scale_array || ARRAY[${fitzpatrick_scale}]
@@ -81,7 +95,7 @@ async function insertEmojiIntoTable(table_name : string, keyword : string, emoji
             END IF;
             RETURN;
         ELSE
-            INSERT INTO ${table_name}
+            INSERT INTO ${new_table_name}
             VALUES (
                 %L,
                 ARRAY[%L],

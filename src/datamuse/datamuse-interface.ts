@@ -1,5 +1,5 @@
-export interface UlimitConfig {
-    ulimit_increment: number;
+export interface IncrementConfig {
+    ulimit_increment: number
 }
 
 export interface ReturnedRequest {
