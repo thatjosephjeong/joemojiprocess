@@ -1,7 +1,9 @@
 import * as natural from "natural"
 
 export function stemWord (word : string) {
-    return natural.PorterStemmer.stem(word);
+    const stemmed_word =  natural.PorterStemmer.stem(word);
+    console.log(`stemmed ${word} to ${stemmed_word}`);
+    return stemmed_word;
 }
 
 export function tokeniseString(input : string) : string[] {

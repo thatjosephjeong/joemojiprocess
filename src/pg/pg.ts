@@ -13,16 +13,16 @@ const raw_table_name = pg_config.raw_table_name;
 const temp_table_name = pg_config.temp_table_name;
 const output_table_name = pg_config.output_table_name;
 
-const ulimit_config : Readonly<IncrementConfig> = readFromData('config');
+const ulimit_config : Readonly<IncrementConfig> = readFromData('increment-config');
 
-export async function createNewRawTable() : Promise<void> {
+export async function createNewRawTable(iterations : number) : Promise<void> {
     // create a new raw table
-    await createNewTable(raw_table_name);
+    await createNewTable(raw_table_name + iterations.toString());
     return;
 }
 
-export async function createNewOutputTable() : Promise<void> {
-    await createNewTable(output_table_name);
+export async function createNewOutputTable(iterations : number) : Promise<void> {
+    await createNewTable(output_table_name + iterations.toString());
 }
 
 async function createNewTable(table_name : string) : Promise<void> {
@@ -54,6 +54,10 @@ export async function insertEmojiIntoRawTable(keyword : string, emoji : string, 
     return await insertEmojiIntoTable(raw_table_name, keyword, emoji, weighting, fitzpatrick_scale, iterations)
 }
 
+export async function insertEmojiIntoOutputTable(keyword : string, emoji : string, weighting : number, fitzpatrick_scale : boolean, iterations : number) : Promise<null> {
+    return await insertEmojiIntoTable(output_table_name, keyword, emoji, weighting, fitzpatrick_scale, iterations)
+}
+
 async function insertEmojiIntoTable(table_name : string, keyword : string, emoji : string, weighting : number, fitzpatrick_scale : boolean, iterations : number) : Promise<null> {
     /*
     Here is what the query string is trying to do:
@@ -67,7 +71,7 @@ async function insertEmojiIntoTable(table_name : string, keyword : string, emoji
         INSERT the keyword with the emoji and weight
     */
    var new_table_name = table_name;
-    if (table_name != raw_table_name) {
+    if (table_name != temp_table_name) {
         new_table_name = new_table_name + iterations.toString();
     }
    
@@ -116,12 +120,12 @@ async function insertEmojiIntoTable(table_name : string, keyword : string, emoji
     return null;
 }
 
-export async function createTempTable() {
+export async function createTempTable(iterations : number) {
     // createa a temp table and make sure temp table is dropped first
     await pool.query(`DROP TABLE IF EXISTS ${temp_table_name};`);
 
     const query_string = `
-    CREATE TABLE ${temp_table_name} AS SELECT * FROM ${raw_table_name};
+    CREATE TABLE ${temp_table_name} AS SELECT * FROM ${raw_table_name + iterations.toString()};
     `
     console.log(query_string);
     await pool.query(query_string);

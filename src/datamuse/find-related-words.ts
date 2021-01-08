@@ -4,9 +4,9 @@ import { findRelatedWords } from "./datamuse";
 import { ReturnedRequest, Word } from "./datamuse-interface";
 import { normaliseInput } from "../word-processing/normalise";
 
-export async function addRelatedWords(iterations : number) {
+export async function addRelatedWords(old_iterations : number, new_iterations : number) {
     // wait for a temp table to be created
-    await createTempTable();
+    await createTempTable(old_iterations);
 
     // create a paginated temp table
     // this is to keep requests under the ulimit
@@ -16,7 +16,7 @@ export async function addRelatedWords(iterations : number) {
     while (result.rowCount != 0) {
 
         var rows = result.rows;
-        await findRelatedWordsAndAddThem(rows, iterations);
+        await findRelatedWordsAndAddThem(rows, new_iterations);
         // get the next iteration
         result = (await temp_table.next()).value
 
@@ -70,7 +70,7 @@ async function insertRowArrayIntoRawTable(rows_updated_weighting : Row[] , relat
             for (let i in clean_keywords) {
                 // finally, insert all the emoji into the raw table
                 await insertEmojiIntoRawTable(
-                    clean_keywords[i], 
+                    clean_keywords[i],
                     updated_row.emoji_array[m], 
                     updated_row.weighting_array[m], 
                     updated_row.fitzpatrick_scale_array[m],

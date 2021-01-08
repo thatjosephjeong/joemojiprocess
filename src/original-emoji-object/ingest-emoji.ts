@@ -3,10 +3,10 @@ import { readFromData } from "../data/read-data";
 import { createNewRawTable, insertEmojiIntoRawTable } from "../pg/pg";
 import { EmojiImport } from "./ingest-interface";
 
-export async function buildOriginalSQLDatabase() {
+export async function buildOriginalSQLDatabase(iterations : number) {
     // read in emojiJSON and create a new keywords table at the same time
     // only returns the read emoji though
-    const emoji_import = (await Promise.all([readEmojiJSON(), createNewRawTable()]))[0];
+    const emoji_import = (await Promise.all([readEmojiJSON(), createNewRawTable(iterations)]))[0];
 
     // insert the original keywords into the SQL database
     await insertOriginalKeywords(emoji_import);
