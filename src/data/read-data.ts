@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from "fs";
+import * as path from "path";
 
 export function readFromData(fileName : string) : Readonly<any> {
     // returns JSON object stored in data folder

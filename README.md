@@ -1,9 +1,19 @@
 # joemojiprocess
 
-# Overview
+This is as far as possible away from functional programming.
+But, this is very memory efficient
 
-This is code that will ingest emoji.json and convert into a JSON file of stemmed keywords. This will allow one to search for these stemmed keywords in the file.
-
-This code is horribly inefficient and memory/processor intensive. 
-
-One very obvious improvement is to use an SQL server as opposed to holding the entire Map in memory. Another improvement would be to use Immutable.js so that multiple copies of the same object aren't hogging up memory. As of right now, I could use Postgresql to improve the code, but it should work for now.
+Make sure to create src/data/pg-config.json in this format:
+{
+    "server_details": {
+        "host": "localhost",
+        "database": "database",
+        "user": "usename",
+        "password": "password",
+        "port": 5432
+    },
+    "output_table_name": "emojis",
+    "raw_table_name": "rawEmojis",
+    "temp_table_name": "tempEmojis"
+}
+PLEASE ENSURE that your table and database name is postgresql is happy to be overwritten

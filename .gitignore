@@ -2,4 +2,6 @@
 dist
 node_modules
 
+pg-config.json
+
 test.log

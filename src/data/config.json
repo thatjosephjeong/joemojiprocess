@@ -1,5 +1,0 @@
-{
-    "max_ulimit": 1024,
-    "export_file_name": "export",
-    "raw_export_file_name": "export_raw"
-}

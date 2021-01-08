@@ -1,3 +1,7 @@
+export interface IncrementConfig {
+    ulimit_increment: number
+}
+
 export interface ReturnedRequest {
     original_word: string,
     related_words: Word[]

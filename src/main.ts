@@ -1,52 +1,43 @@
-import { findRelatedWordsList } from "./emojiProcessing/datamuse";
-import { exportMapToJSONObject } from "./emojiProcessing/export";
-import { ingestEmojisAsMap } from "./emojiProcessing/ingest";
-import { EmojiMap } from "./interfaces/ingest_interfaces";
-import { addRelatedWordsToMap } from "./map/recursive_map";
-import { ingestPreviousExport } from "./map/ingest_map";
-
-import * as readline from "readline"
+import { buildOriginalSQLDatabase } from "./original-emoji-object/ingest-emoji";
+import { addRelatedWords } from "./datamuse/find-related-words";
+import { askForQuestion } from "./original-emoji-object/question";
+import { createNewRawTable } from "./pg/pg";
+import { exportToOutputTable } from "./output/output";
 
 async function main() {
 
-    var original_emojis_map : EmojiMap = new Map();
+    const iterations = await askForQuestion(
+`
+Which iteration of the table is this??
 
-    const iterations = await askForQuestion('Where do you want to import the file? \n 0 - emoji.json, \n 1 - the previous export.json\n');
-    if (iterations === 0) {
-        // import the original JSON file in a map format
-        original_emojis_map = ingestEmojisAsMap();
+-1 convert a rawemoji table into raw output
+0 - the original emoji.json,
+any number above 1 will import
+the previous postgresql raw-table
+
+`   );
+    
+// only need to build the original rawtable if it doesn't already exist
+    if (iterations == 0) {
+        // build the original SQL database from emoji.json
+        await buildOriginalSQLDatabase(iterations);
+        
+        // find related words and add them to the SQL Database
+        // this includes creating the temp table
+        await addRelatedWords(iterations, iterations);
+    } else if (iterations == -1) {
+        const table_num = await askForQuestion('which rawemoji table?');
+        await exportToOutputTable(table_num);
     } else {
-        original_emojis_map = ingestPreviousExport();
+        // creates a new raw table
+        await createNewRawTable(iterations);
+
+        await addRelatedWords(iterations - 1, iterations);
     }
-    // find related words from datamuse
-    const new_emoji_list = await findRelatedWordsList(original_emojis_map)
 
-    // add related words to a new map
-    const new_emoji_map = await addRelatedWordsToMap(new_emoji_list, original_emojis_map);
+    
 
-    exportMapToJSONObject(new_emoji_map);   
-
-    console.log('all done!');
+    console.log("we done did it chief");
 }
 
-async function askForQuestion(query : string) {
-    const iterations_string : string = await askQuestion(query);
-    const iterations = parseInt(iterations_string);
-    return iterations;
-}
-
-function askQuestion(query : string) {
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-    });
-
-    const answer : Promise<string> = new Promise(resolve => rl.question(query, ans => {
-        rl.close();
-        resolve(ans);
-    })) 
-    return answer
-}
-
-
-main()
+main();
